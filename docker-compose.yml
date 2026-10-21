@@ -1,0 +1,65 @@
+
+services:
+  frontend:
+    build:
+      context: ./CarsLocationfrontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+    - cars-network
+
+  backend:
+    build:
+      context: ./carslocation
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: "jdbc:sqlserver://sqlserver:1433;databaseName=cars_location;encrypt=true;trustServerCertificate=true"
+      SPRING_DATASOURCE_USERNAME: sa
+      SPRING_DATASOURCE_PASSWORD: ${SA_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION: ${JWT_EXPIRATION:-86400000}
+    depends_on:
+      sqlserver:
+          condition: service_healthy
+    networks:
+      - cars-network
+
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_PID: Developer
+      MSSQL_SA_PASSWORD: ${SA_PASSWORD}
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+    healthcheck:
+      test:
+        - CMD
+        - /opt/mssql-tools18/bin/sqlcmd
+        - -S
+        - localhost
+        - -U
+        - sa
+        - -P
+        - ${SA_PASSWORD}
+        - -C
+        - -Q
+        - "SELECT 1"
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+    restart: unless-stopped
+    networks:
+      - cars-network
+
+volumes:
+  sqlserver_data:
+networks:
+  cars-network:
+    driver: bridge
