@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=DM+Serif+Display:ital@0;1&family=Manrope:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&family=DM+Serif+Display:ital@0;1&family=Manrope:wght@400;500;600;700&family=Space+Grotesk:wght@500;700;800&display=swap');
 @import "tailwindcss";
 
 :root {
@@ -7,6 +7,13 @@
   background: #f4f1eb;
   font-synthesis: none;
   line-height: 1.5;
+  --logo-text: #1A1A1A;
+  --logo-sub: #6B665E;
+}
+
+.dark {
+  --logo-text: #FFFFFF;
+  --logo-sub: #9E988F;
 }
 
 [dir="rtl"],

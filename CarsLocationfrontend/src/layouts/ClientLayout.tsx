@@ -82,7 +82,7 @@ export default function ClientLayout() {
           {/* 1. Left Section: Brand Logo + Client Badge if logged in */}
           <div className="navbar-left flex items-center gap-3">
             <Link to="/" className="navbar-brand-link" aria-label="Nova Drive Home">
-              <Logo />
+              <Logo height={38} />
             </Link>
 
             {user && (
