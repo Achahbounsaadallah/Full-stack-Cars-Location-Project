@@ -1,20 +1,18 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
   Car as CarIcon,
   Filter,
   Trash2,
   AlertCircle,
-  Tag,
-  Hash,
-  Coins,
-  CheckCircle2,
+  Plus,
 } from 'lucide-react'
 
 import type { Car } from '../../../types'
 import Loader from '../../../shared/components/Loader'
 import { deleteCar, getCars, updateCar } from '../services/carService'
 import { statusLabel } from '../../../shared/utils/statusLabel'
+import AddCarModal from '../components/AddCarModal'
 
 export default function AdminCarsPage() {
   const { t } = useTranslation('common')
@@ -22,13 +20,19 @@ export default function AdminCarsPage() {
   const [filter, setFilter] = useState('ALL')
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [addModalOpen, setAddModalOpen] = useState(false)
 
-  useEffect(() => {
+  const loadCars = useCallback(() => {
+    setLoading(true)
     getCars()
       .then(setCars)
       .catch(() => setError(t('error')))
       .finally(() => setLoading(false))
   }, [t])
+
+  useEffect(() => {
+    loadCars()
+  }, [loadCars])
 
   const visibleCars = useMemo(
     () => (filter === 'ALL' ? cars : cars.filter((car) => car.status === filter)),
@@ -63,6 +67,12 @@ export default function AdminCarsPage() {
   }
 
   return (
+    <>
+    <AddCarModal
+      isOpen={addModalOpen}
+      onClose={() => setAddModalOpen(false)}
+      onCarAdded={() => { setAddModalOpen(false); loadCars() }}
+    />
     <div className="space-y-6 animate-in fade-in duration-300">
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-stone-200 dark:border-stone-800">
@@ -76,19 +86,30 @@ export default function AdminCarsPage() {
           <p className="text-sm text-stone-500 dark:text-stone-400 mt-1">{t('fleetDescription')}</p>
         </div>
 
-        {/* Filter bar */}
-        <div className="flex items-center gap-2">
-          <Filter size={16} className="text-stone-400" />
-          <select
-            className="h-10 px-3.5 rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 text-xs font-semibold text-stone-700 dark:text-stone-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-500/20"
-            value={filter}
-            onChange={(event) => setFilter(event.target.value)}
+        {/* Actions bar */}
+        <div className="flex items-center gap-3">
+          <button
+            id="add-car-btn"
+            onClick={() => setAddModalOpen(true)}
+            className="flex items-center gap-2 h-10 px-4 rounded-xl text-xs font-bold text-white shadow-md transition-all hover:-translate-y-0.5 hover:shadow-lg"
+            style={{ background: 'linear-gradient(135deg, #7c3aed 0%, #a855f7 100%)', boxShadow: '0 4px 14px rgba(124,58,237,0.35)' }}
           >
-            <option value="ALL">{t('all')}</option>
-            <option value="AVAILABLE">{statusLabel(t, 'AVAILABLE')}</option>
-            <option value="RENTED">{statusLabel(t, 'RENTED')}</option>
-            <option value="MAINTENANCE">{statusLabel(t, 'MAINTENANCE')}</option>
-          </select>
+            <Plus size={15} />
+            Add Vehicle
+          </button>
+          <div className="flex items-center gap-2">
+            <Filter size={16} className="text-stone-400" />
+            <select
+              className="h-10 px-3.5 rounded-xl border border-stone-200 dark:border-stone-800 bg-white dark:bg-stone-900 text-xs font-semibold text-stone-700 dark:text-stone-200 shadow-sm focus:outline-none focus:ring-2 focus:ring-amber-500/20"
+              value={filter}
+              onChange={(event) => setFilter(event.target.value)}
+            >
+              <option value="ALL">{t('all')}</option>
+              <option value="AVAILABLE">{statusLabel(t, 'AVAILABLE')}</option>
+              <option value="RENTED">{statusLabel(t, 'RENTED')}</option>
+              <option value="MAINTENANCE">{statusLabel(t, 'MAINTENANCE')}</option>
+            </select>
+          </div>
         </div>
       </div>
 
@@ -206,5 +227,6 @@ export default function AdminCarsPage() {
         )}
       </div>
     </div>
+    </>
   )
 }

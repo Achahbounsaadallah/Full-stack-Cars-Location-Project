@@ -70,8 +70,8 @@ export default function StaffLayout({ role }: { role: 'ADMIN' | 'EMPLOYEE' }) {
       <aside className="w-full md:w-64 lg:w-72 bg-stone-900 border-e border-stone-800 text-stone-200 flex flex-col shrink-0">
         {/* Brand Header */}
         <div className="p-5 border-b border-stone-800/80 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2 group">
-            <Logo />
+          <Link to="/" className="flex items-center gap-2 group" aria-label="Nova Drive Home">
+            <Logo variant="light" height={36} />
           </Link>
           <span
             className={`text-[10px] font-extrabold uppercase tracking-widest px-2.5 py-0.5 rounded-full border ${

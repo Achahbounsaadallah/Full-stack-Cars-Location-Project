@@ -99,7 +99,8 @@ public class SecurityConfig {
         configuration.setAllowedOrigins(java.util.List.of(
                 "http://84.8.217.111:3000",
                 "http://localhost:3000",
-                "http://127.0.0.1:3000"
+                "http://127.0.0.1:3000",
+                "http://localhost:5173"
 
         ));
         configuration.setAllowedMethods(java.util.List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
@@ -109,6 +110,26 @@ public class SecurityConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
+    }
+    @Bean
+    public CommandLineRunner createAdminUser(
+            UserRepository userRepository,
+            PasswordEncoder passwordEncoder
+    ) {
+        return args -> {
+            if (!userRepository.existsByEmail("hamid@gmail.com")) {
+                User admin = User.builder()
+                        .firstName("Hamid")
+                        .lastName("Admin")
+                        .email("hamid@gmail.com")
+                        .passwordHash(passwordEncoder.encode("hamid123"))
+                        .role(Role.ADMIN)
+                        .status(UserStatus.ACTIVE)
+                        .build();
+
+                userRepository.save(admin);
+            }
+        };
     }
      
     
