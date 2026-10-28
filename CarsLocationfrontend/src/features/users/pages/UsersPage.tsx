@@ -24,6 +24,7 @@ export default function UsersPage() {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [roleFilter, setRoleFilter] = useState<'ALL' | 'EMPLOYEE' | 'ADMIN' | 'CLIENT'>('ALL')
+  const [statusFilter, setStatusFilter] = useState<'ALL' | 'ACTIVE' | 'INACTIVE' | 'SUSPENDED'>('ALL')
   const [deletingId, setDeletingId] = useState<string | null>(null)
 
   const loadUsers = () => {
@@ -58,6 +59,9 @@ export default function UsersPage() {
       // Role filter
       if (roleFilter !== 'ALL' && u.role !== roleFilter) return false
 
+      // Status filter
+      if (statusFilter !== 'ALL' && u.status !== statusFilter) return false
+
       // Search query
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase()
@@ -71,11 +75,12 @@ export default function UsersPage() {
 
       return true
     })
-  }, [users, roleFilter, searchQuery])
+  }, [users, roleFilter, statusFilter, searchQuery])
 
   // Count employees
   const employeeCount = useMemo(() => users.filter((u) => u.role === 'EMPLOYEE').length, [users])
   const adminCount = useMemo(() => users.filter((u) => u.role === 'ADMIN').length, [users])
+  const activeCount = useMemo(() => users.filter((u) => u.status === 'ACTIVE').length, [users])
 
   if (loading) {
     return (
@@ -97,7 +102,7 @@ export default function UsersPage() {
             Gestion des Utilisateurs &amp; Équipe
           </h1>
           <p className="text-sm text-stone-500 dark:text-stone-400 mt-1">
-            {users.length} utilisateur(s) au total · {employeeCount} employé(s) · {adminCount} administrateur(s)
+            {users.length} utilisateur(s) · {employeeCount} employé(s) · {adminCount} admin(s) · {activeCount} actif(s)
           </p>
         </div>
 
@@ -135,33 +140,53 @@ export default function UsersPage() {
           />
         </div>
 
-        {/* Role Filters */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
-          <span className="text-[11px] font-bold text-stone-400 uppercase tracking-wider mr-1 hidden md:inline flex items-center gap-1">
-            <Filter size={12} />
-            Rôle :
-          </span>
-          {(
-            [
-              { id: 'ALL', label: 'Tous' },
-              { id: 'EMPLOYEE', label: 'Employés' },
-              { id: 'ADMIN', label: 'Admins' },
-              { id: 'CLIENT', label: 'Clients' },
-            ] as const
-          ).map((tab) => (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => setRoleFilter(tab.id)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer ${
-                roleFilter === tab.id
-                  ? 'bg-amber-600 text-white shadow-sm'
-                  : 'bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-700'
-              }`}
+        {/* Role & Status Filters */}
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Status Dropdown */}
+          <div className="flex items-center gap-1.5">
+            <span className="text-[11px] font-bold text-stone-400 uppercase tracking-wider hidden lg:inline">
+              Statut :
+            </span>
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value as any)}
+              className="px-3 py-1.5 rounded-xl text-xs font-bold bg-stone-100 dark:bg-stone-800 text-stone-700 dark:text-stone-300 border border-stone-200 dark:border-stone-700 outline-none focus:ring-2 focus:ring-amber-500 cursor-pointer"
             >
-              {tab.label}
-            </button>
-          ))}
+              <option value="ALL">Tous les statuts</option>
+              <option value="ACTIVE">● Actif</option>
+              <option value="INACTIVE">● Inactif</option>
+              <option value="SUSPENDED">● Suspendu</option>
+            </select>
+          </div>
+
+          {/* Role Filters */}
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
+            <span className="text-[11px] font-bold text-stone-400 uppercase tracking-wider mr-1 hidden md:inline flex items-center gap-1">
+              <Filter size={12} />
+              Rôle :
+            </span>
+            {(
+              [
+                { id: 'ALL', label: 'Tous' },
+                { id: 'EMPLOYEE', label: 'Employés' },
+                { id: 'ADMIN', label: 'Admins' },
+                { id: 'CLIENT', label: 'Clients' },
+              ] as const
+            ).map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setRoleFilter(tab.id)}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-colors cursor-pointer ${
+                  roleFilter === tab.id
+                    ? 'bg-amber-600 text-white shadow-sm'
+                    : 'bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-700'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -174,6 +199,7 @@ export default function UsersPage() {
                 <th className="py-3.5 px-5 text-start">Utilisateur</th>
                 <th className="py-3.5 px-5 text-start">Coordonnées</th>
                 <th className="py-3.5 px-5 text-start">Rôle</th>
+                <th className="py-3.5 px-5 text-start">Statut</th>
                 <th className="py-3.5 px-5 text-end">Actions</th>
               </tr>
             </thead>
@@ -250,6 +276,38 @@ export default function UsersPage() {
                           <UserIcon size={14} />
                         )}
                         <span>{t(`roles.${user.role}`, { defaultValue: user.role })}</span>
+                      </span>
+                    </td>
+
+                    {/* Status Pill */}
+                    <td className="py-4 px-5">
+                      <span
+                        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border ${
+                          user.status === 'ACTIVE'
+                            ? 'bg-emerald-50 text-emerald-800 border-emerald-200/80 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-900'
+                            : user.status === 'SUSPENDED'
+                            ? 'bg-rose-50 text-rose-800 border-rose-200/80 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-900'
+                            : 'bg-stone-100 text-stone-700 border border-stone-200 dark:bg-stone-800 dark:text-stone-300 dark:border-stone-700'
+                        }`}
+                      >
+                        <span
+                          className={`w-2 h-2 rounded-full ${
+                            user.status === 'ACTIVE'
+                              ? 'bg-emerald-500'
+                              : user.status === 'SUSPENDED'
+                              ? 'bg-rose-500'
+                              : 'bg-stone-400'
+                          }`}
+                        />
+                        <span>
+                          {user.status === 'ACTIVE'
+                            ? 'Actif'
+                            : user.status === 'INACTIVE'
+                            ? 'Inactif'
+                            : user.status === 'SUSPENDED'
+                            ? 'Suspendu'
+                            : user.status || 'Actif'}
+                        </span>
                       </span>
                     </td>
 

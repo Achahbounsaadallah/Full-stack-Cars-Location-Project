@@ -1,5 +1,5 @@
 import apiClient from '../../../shared/api/axiosInstance'
-import type { User } from '../../../types'
+import type { User, UserStatus } from '../../../types'
 
 export interface CreateUserPayload {
   firstName: string
@@ -8,6 +8,7 @@ export interface CreateUserPayload {
   password: string
   phone?: string
   role?: string
+  status?: UserStatus | string
 }
 
 export async function getUsers() {

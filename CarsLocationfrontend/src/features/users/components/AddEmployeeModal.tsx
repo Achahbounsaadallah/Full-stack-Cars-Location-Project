@@ -14,8 +14,11 @@ import {
   CheckCircle2,
   AlertCircle,
   Loader2,
+  PauseCircle,
+  Ban,
 } from 'lucide-react'
 import { createUser, type CreateUserPayload } from '../services/userService'
+import type { UserStatus } from '../../../types'
 import { getApiError } from '../../../shared/api/error'
 
 interface AddEmployeeModalProps {
@@ -31,6 +34,7 @@ const INITIAL_FORM: CreateUserPayload = {
   password: '',
   phone: '',
   role: 'EMPLOYEE',
+  status: 'ACTIVE',
 }
 
 export default function AddEmployeeModal({
@@ -93,6 +97,7 @@ export default function AddEmployeeModal({
         password: form.password,
         phone: form.phone?.trim() || undefined,
         role: form.role || 'EMPLOYEE',
+        status: form.status || 'ACTIVE',
       })
       setSuccess(true)
       setTimeout(() => {
@@ -114,7 +119,7 @@ export default function AddEmployeeModal({
       onClick={handleClose}
     >
       <div
-        className="relative w-full max-w-lg bg-white dark:bg-stone-900 rounded-3xl border border-stone-200 dark:border-stone-800 shadow-2xl overflow-hidden text-stone-900 dark:text-stone-100 flex flex-col"
+        className="relative w-full max-w-lg max-h-[90vh] bg-white dark:bg-stone-900 rounded-3xl border border-stone-200 dark:border-stone-800 shadow-2xl overflow-hidden text-stone-900 dark:text-stone-100 flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -144,7 +149,7 @@ export default function AddEmployeeModal({
         </div>
 
         {/* Form Body */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="p-6 space-y-4 overflow-y-auto">
           {/* Success Banner */}
           {success && (
             <div className="p-4 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 flex items-center gap-3 text-xs font-bold animate-in fade-in">
@@ -306,6 +311,95 @@ export default function AddEmployeeModal({
                 <div className="text-xs">
                   <span className="font-bold block">Administrateur</span>
                   <span className="text-[10px] text-stone-400">Accès intégral</span>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          {/* Status Selection */}
+          <div>
+            <label className="block text-xs font-bold text-stone-600 dark:text-stone-300 mb-1.5 flex items-center justify-between">
+              <span>
+                Statut Initial du Compte <span className="text-rose-500">*</span>
+              </span>
+              <span className="text-[10px] text-stone-400 font-normal">Requis par le backend</span>
+            </label>
+            <div className="grid grid-cols-3 gap-2.5">
+              {/* ACTIVE */}
+              <label
+                className={`p-3 rounded-2xl border flex flex-col items-center text-center gap-1.5 cursor-pointer transition-all ${
+                  form.status === 'ACTIVE'
+                    ? 'bg-emerald-50/80 dark:bg-emerald-950/40 border-emerald-500 text-emerald-900 dark:text-emerald-200 ring-2 ring-emerald-500/20 shadow-sm'
+                    : 'bg-stone-50 dark:bg-stone-800/50 border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800'
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="status"
+                  value="ACTIVE"
+                  checked={form.status === 'ACTIVE'}
+                  onChange={() => setForm({ ...form, status: 'ACTIVE' })}
+                  className="sr-only"
+                />
+                <CheckCircle2
+                  size={18}
+                  className={form.status === 'ACTIVE' ? 'text-emerald-600 dark:text-emerald-400' : 'text-stone-400'}
+                />
+                <div>
+                  <span className="font-bold block text-xs">Actif</span>
+                  <span className="text-[10px] text-stone-400">Accès direct</span>
+                </div>
+              </label>
+
+              {/* INACTIVE */}
+              <label
+                className={`p-3 rounded-2xl border flex flex-col items-center text-center gap-1.5 cursor-pointer transition-all ${
+                  form.status === 'INACTIVE'
+                    ? 'bg-stone-200/70 dark:bg-stone-800 border-stone-500 text-stone-900 dark:text-stone-100 ring-2 ring-stone-400/20 shadow-sm'
+                    : 'bg-stone-50 dark:bg-stone-800/50 border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800'
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="status"
+                  value="INACTIVE"
+                  checked={form.status === 'INACTIVE'}
+                  onChange={() => setForm({ ...form, status: 'INACTIVE' })}
+                  className="sr-only"
+                />
+                <PauseCircle
+                  size={18}
+                  className={form.status === 'INACTIVE' ? 'text-stone-700 dark:text-stone-300' : 'text-stone-400'}
+                />
+                <div>
+                  <span className="font-bold block text-xs">Inactif</span>
+                  <span className="text-[10px] text-stone-400">En attente</span>
+                </div>
+              </label>
+
+              {/* SUSPENDED */}
+              <label
+                className={`p-3 rounded-2xl border flex flex-col items-center text-center gap-1.5 cursor-pointer transition-all ${
+                  form.status === 'SUSPENDED'
+                    ? 'bg-rose-50/80 dark:bg-rose-950/40 border-rose-500 text-rose-900 dark:text-rose-200 ring-2 ring-rose-500/20 shadow-sm'
+                    : 'bg-stone-50 dark:bg-stone-800/50 border-stone-200 dark:border-stone-700 text-stone-600 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800'
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="status"
+                  value="SUSPENDED"
+                  checked={form.status === 'SUSPENDED'}
+                  onChange={() => setForm({ ...form, status: 'SUSPENDED' })}
+                  className="sr-only"
+                />
+                <Ban
+                  size={18}
+                  className={form.status === 'SUSPENDED' ? 'text-rose-600 dark:text-rose-400' : 'text-stone-400'}
+                />
+                <div>
+                  <span className="font-bold block text-xs">Suspendu</span>
+                  <span className="text-[10px] text-stone-400">Accès bloqué</span>
                 </div>
               </label>
             </div>

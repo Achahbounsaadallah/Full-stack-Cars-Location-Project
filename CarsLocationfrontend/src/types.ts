@@ -53,6 +53,8 @@ export type Maintenance = {
   cost?: number
   car?: Car
 }
+export type UserStatus = 'ACTIVE' | 'INACTIVE' | 'SUSPENDED'
+
 export type User = {
   id: string
   firstName: string
@@ -60,7 +62,8 @@ export type User = {
   email: string
   phone?: string
   role: string
-  status: string
+  status: UserStatus | string
   createdAt: string
   updatedAt?: string
 }
+
