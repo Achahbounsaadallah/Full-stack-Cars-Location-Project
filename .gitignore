@@ -1,3 +1,4 @@
+certbot/
 # Secrets and local configuration
 .env
 .env.*

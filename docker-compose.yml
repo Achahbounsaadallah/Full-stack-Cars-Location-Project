@@ -1,20 +1,24 @@
-
 services:
   frontend:
     build:
       context: ./CarsLocationfrontend
     ports:
-      - "3000:80"
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./certbot/www:/var/www/certbot:ro
+      - ./certbot/conf:/etc/letsencrypt:ro
     depends_on:
       - backend
+    restart: unless-stopped
     networks:
-    - cars-network
+      - cars-network
 
   backend:
     build:
       context: ./carslocation
-    ports:
-      - "8080:8080"
+    expose:
+      - "8080"
     environment:
       SPRING_DATASOURCE_URL: "jdbc:sqlserver://sqlserver:1433;databaseName=cars_location;encrypt=true;trustServerCertificate=true"
       SPRING_DATASOURCE_USERNAME: sa
@@ -23,7 +27,8 @@ services:
       JWT_EXPIRATION: ${JWT_EXPIRATION:-86400000}
     depends_on:
       sqlserver:
-          condition: service_healthy
+        condition: service_healthy
+    restart: unless-stopped
     networks:
       - cars-network
 
@@ -33,8 +38,6 @@ services:
       ACCEPT_EULA: "Y"
       MSSQL_PID: Developer
       MSSQL_SA_PASSWORD: ${SA_PASSWORD}
-    ports:
-      - "1433:1433"
     volumes:
       - sqlserver_data:/var/opt/mssql
     healthcheck:
@@ -58,8 +61,18 @@ services:
     networks:
       - cars-network
 
+  certbot:
+    image: certbot/certbot:latest
+    volumes:
+      - ./certbot/www:/var/www/certbot
+      - ./certbot/conf:/etc/letsencrypt
+    networks:
+      - cars-network
+
 volumes:
   sqlserver_data:
+
 networks:
   cars-network:
     driver: bridge
+
